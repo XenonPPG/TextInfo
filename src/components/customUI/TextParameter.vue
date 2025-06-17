@@ -21,18 +21,18 @@ const textStyle = useTextStyle();
 const borderStyle = computed(() => selected.value ? 'border-primary' : 'hover:border-primary hover:border-dashed');
 const selected = ref(false);
 const displayVal = computed(() => {
-    const limit = 12;
-
-    var rVal = Array.isArray(props.val) ? props.val.length : props.val;
-    rVal = rVal.toString();
-    var exceedsLimit = rVal.length > limit;
-    rVal = rVal.slice(0, limit);
-    if (exceedsLimit) {
-        rVal += '<span class="text-gray-500">...</span>';
-    }
-
-    return rVal;
+    const rVal = Array.isArray(props.val) ? props.val.length : props.val;
+    return textStyle.ClampVal(rVal, 12);
 });
+
+function Preview(enable) {
+    if (enable) {
+        textStyle.current = textStyle.Normalize(props.val);
+    }
+    else {
+        textStyle.current = [];
+    }
+}
 
 function Select() {
     selected.value = !selected.value;
@@ -46,8 +46,8 @@ function Select() {
 </script>
 
 <template>
-    <button v-if="!textProcessor.loading" @mouseenter="() => textStyle.current = val"
-        @mouseleave="textStyle.current = []" @click="Select"
+    <button v-if="!textProcessor.loading" @mouseenter="() => Preview(true)" @mouseleave="() => Preview(false)"
+        @click="Select"
         :class="`flex h-10 border ${borderStyle} rounded-md transition-colors duration-150 bg-secondary/50 hover:cursor-pointer`">
         <div class="flex flex-1 items-center">
             <div class="pr-2 ml-2">

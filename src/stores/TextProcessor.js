@@ -3,7 +3,7 @@ import { ref, reactive, nextTick } from 'vue'
 
 export const useTextProcessor = defineStore('TextProcessor', () => {
   // const text = ref('');
-  const text = ref(RandomString(Math.floor(Math.random() * 1000 + 2000)));
+  const text = ref(RandomString(Math.floor(Math.random() * 1000 + 1000)));
   const loading = ref(true);
 
   function RandomString(length){
