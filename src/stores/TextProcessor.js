@@ -19,7 +19,7 @@ export const useTextProcessor = defineStore('TextProcessor', () => {
     simple: {
       characters: {
         characters: {
-          icon: 'radix-icons:pilcrow',
+          icon: 'radix-icons:cursor-text',
           fn: () => [...text.value]
         },
         digits: {
@@ -49,6 +49,10 @@ export const useTextProcessor = defineStore('TextProcessor', () => {
         lowercase: {
           icon: 'radix-icons:letter-case-lowercase',
           fn: () => regex(/\p{Ll}/gu)
+        },
+        unique: {
+          icon: 'radix-icons:pilcrow',
+          fn: () => [...new Set(text.value)].filter(c => c.trim() !== '')
         },
       },
       words: {

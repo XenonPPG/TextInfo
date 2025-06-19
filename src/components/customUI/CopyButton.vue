@@ -27,6 +27,7 @@ function Copy() {
     }
 
     // copy
+    navigator.clipboard.writeText(null);
     navigator.clipboard.writeText(props.text);
 
     // icon change
