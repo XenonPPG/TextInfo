@@ -12,9 +12,10 @@ const props = defineProps({
 const textStyle = useTextStyle();
 
 const icon = ref('radix-icons:copy');
+const cooldown = ref(false);
 
 function Copy() {
-    if (props.text.length == 0) {
+    if (props.text instanceof String || props.text.length == 0) {
         toast.error('Не удалось скопировать',
             {
                 description: 'Фильтры не применены',
@@ -31,9 +32,9 @@ function Copy() {
     navigator.clipboard.writeText(props.text);
 
     // icon change
-    icon.value = 'lucide:check';
+    cooldown.value = true;
     setTimeout(() => {
-        icon.value = 'radix-icons:copy';
+        cooldown.value = false;
     }, 1500);
 
     // notify
@@ -50,7 +51,7 @@ function Copy() {
 </script>
 
 <template>
-    <Button @click="Copy" class="size-11" variant="outline" size="icon">
-        <Icon class="size-4" :icon="icon" />
+    <Button :disabled="cooldown" @click="Copy" class="size-11" variant="outline" size="icon">
+        <Icon class="size-4" :icon="cooldown ? 'lucide:check' : 'radix-icons:copy'" />
     </Button>
 </template>

@@ -5,6 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTextProcessor } from '@/stores/TextProcessor.js';
 import { useTextStyle } from '@/stores/TextStyle.js';
 import Separator from '@/components/ui/separator/Separator.vue';
+import CopyButton from '@/components/customUI/CopyButton.vue';
+import Ghost from '@/components/customUI/Ghost.vue';
 
 const props = defineProps({
     icon: String,
@@ -20,12 +22,11 @@ const textStyle = useTextStyle();
 
 const borderStyle = computed(() => selected.value ? 'border-primary' : 'hover:border-primary hover:border-dashed');
 const selected = ref(false);
-const displayVal = computed(() => {
-    const rVal = Array.isArray(props.val) ? props.val.length : props.val;
-    return textStyle.ClampVal(rVal, 12);
-});
+const displayVal = computed(() => Array.isArray(props.val) ? props.val.length : props.val);
+const copyVisible = ref(false);
 
 function Preview(enable) {
+    copyVisible.value = enable;
     if (enable) {
         textStyle.current = textStyle.Normalize(props.val);
     }
@@ -55,8 +56,12 @@ function Select() {
             </div>
             <p>{{ title }}</p>
         </div>
-        <div class="border-l flex-1 items-center justify-center flex">
-            <p v-html="displayVal"></p>
+        <div class="border-l flex-1 items-center justify-between flex px-1">
+            <div />
+            <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
+            <Ghost :visible="copyVisible">
+                <CopyButton :text="displayVal" class="size-7" variant="ghost" @click.stop/>
+            </Ghost>
         </div>
     </button>
     <Skeleton v-else class="rounded-md h-10 transition-colors duration-75 bg-secondary" />
