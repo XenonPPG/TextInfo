@@ -9,6 +9,6 @@ const className = computed(() => 'opacity-' + (props.visible ? '100' : '0'));
 
 <template>
     <div :class="`${className} transition-opacity`">
-        <slot></slot>
+        <slot class="opacity-0 opacity-100"></slot>
     </div>
 </template>

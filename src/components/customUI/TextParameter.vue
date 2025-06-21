@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTextProcessor } from '@/stores/TextProcessor.js';
 import { useTextStyle } from '@/stores/TextStyle.js';
+import { Button } from '@/components/ui/button';
 import Separator from '@/components/ui/separator/Separator.vue';
 import CopyButton from '@/components/customUI/CopyButton.vue';
 import Ghost from '@/components/customUI/Ghost.vue';
@@ -14,7 +15,7 @@ const props = defineProps({
     val: {
         type: [String, Number, Array],
         required: true
-    }
+    },
 });
 
 const textProcessor = useTextProcessor();
@@ -24,6 +25,7 @@ const borderStyle = computed(() => selected.value ? 'border-primary' : 'hover:bo
 const selected = ref(false);
 const displayVal = computed(() => Array.isArray(props.val) ? props.val.length : props.val);
 const copyVisible = ref(false);
+const unique = ref(false);
 
 function Preview(enable) {
     copyVisible.value = enable;
@@ -50,17 +52,25 @@ function Select() {
     <button v-if="!textProcessor.loading" @mouseenter="() => Preview(true)" @mouseleave="() => Preview(false)"
         @click="Select"
         :class="`flex h-10 border ${borderStyle} rounded-md transition-colors duration-150 bg-secondary/50 hover:cursor-pointer`">
-        <div class="flex flex-1 items-center">
-            <div class="pr-2 ml-2">
-                <Icon class="size-6 text-primary" :icon="icon" />
+        <div class="flex flex-1 items-center justify-between">
+            <div class="flex">
+                <div class="pr-2 ml-2">
+                    <Icon class="size-6 text-primary" :icon="icon" />
+                </div>
+                <p>{{ title }}</p>
             </div>
-            <p>{{ title }}</p>
+            <Ghost :visible="copyVisible || unique" class="pr-1">
+                <Button class="size-7" variant="outline" @click.stop="() => unique = !unique">
+                    <Icon v-if="unique" icon="radix-icons:value-none" class="text-primary" />
+                    <Icon v-else icon="radix-icons:value" />
+                </Button>
+            </Ghost>
         </div>
         <div class="border-l flex-1 items-center justify-between flex px-1">
-            <div />
+            <div class="size-7"/>
             <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
             <Ghost :visible="copyVisible">
-                <CopyButton :text="displayVal" class="size-7" variant="ghost" @click.stop/>
+                <CopyButton :text="displayVal" class="size-7" variant="outline" @click.stop />
             </Ghost>
         </div>
     </button>

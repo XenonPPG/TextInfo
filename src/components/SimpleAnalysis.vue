@@ -11,7 +11,7 @@ const textProcessor = useTextProcessor();
         <h1 class="text-3xl text-primary">Простой анализ</h1>
         <div class="flex flex-col pt-4 gap-5">
             <Category v-for="(textParams, category) in textProcessor.parameters.simple" :label="category">
-                <TextParameter v-for="(params, title) in textParams" :title="title" :icon="params.icon" :val="params.val || 0"/>
+                <TextParameter v-for="(params, title) in textParams" :title="title" :icon="params.icon" :val="params.val || 0" :unique="false"/>
             </Category>
         </div>
     </div>
