@@ -1,32 +1,38 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { Button } from '@/components/ui/button';
 import IconButton from '@/components/customUI/IconButton.vue';
 
 const props = withDefaults(
   defineProps<{
     cooldown?: number;
-    icon: string;
+    icon?: string | null;
     cdIcon?: string | null;
+    disable?: boolean | null;
   }>(),
   {
-    cooldown: 1500,
+    cooldown: 1000,
     cdIcon: null
   }
 );
 
 
-const cooldown = ref(false);
-const icon = computed(() => cooldown.value && props.cdIcon !== null ? props.cdIcon : props.icon);
-const cursor = computed(() => '!cursor-' + (cooldown.value ? 'auto' : 'pointer'))
+const cd = ref(false);
+const icon = computed(() => cd.value && props.cdIcon !== null ? props.cdIcon : props.icon);
+const cursor = computed(() => '!cursor-' + (cd.value ? 'auto' : 'pointer'))
 
 function OnClick() {
-    cooldown.value = true;
-    setTimeout(() => {
-        cooldown.value = false;
-    }, props.cooldown);
+  cd.value = true;
+  setTimeout(() => {
+    cd.value = false;
+  }, props.cooldown);
 }
 </script>
 
 <template>
-    <IconButton :icon="icon" @click="OnClick" :class="[cursor, {'pointer-events-none':cooldown}]"/>
+  <IconButton v-if="icon" :icon="icon" :disabled="cd && disable" @click="OnClick"
+    :class="[cursor, { 'pointer-events-none': cd }]" />
+  <Button v-else :disabled="cd && disable" @click="OnClick" :class="[cursor, { 'pointer-events-none': cd }]">
+    <slot></slot>
+  </Button>
 </template>

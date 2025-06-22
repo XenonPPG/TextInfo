@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, defineModel, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import DOMPurify from 'dompurify'
 import { useTextStyle } from '@/stores/TextStyle.js'

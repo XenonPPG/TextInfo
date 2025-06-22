@@ -1,23 +1,22 @@
 <script setup>
-import { ref } from 'vue';
 import { Separator } from '@/components/ui/separator';
 import IconButton from '@/components/customUI/IconButton.vue';
 import CooldownButton from '@/components/customUI/CooldownButton.vue';
 import Ghost from '@/components/customUI/Ghost.vue';
+import HoverTrigger from '@/components/customUI/HoverTrigger.vue';
 
 const props = defineProps({
     label: String
 })
 
-const hovering = ref(false);
 </script>
 
 <template>
-    <div @mouseenter="() => hovering = true" @mouseleave="() => hovering = false">
+    <HoverTrigger v-slot="{ isHovering }">
         <div class="flex gap-4 py-2 items-center">
             <h1 class="text-2xl">{{ label }}</h1>
-            <Ghost :visible="hovering" class="flex gap-1">
-                <CooldownButton icon="radix-icons:trash" cd-icon="lucide:check" class="size-8" variant="destructive" />
+            <Ghost :visible="isHovering" class="flex gap-1">
+                <CooldownButton icon="lucide:trash" cd-icon="lucide:check" class="size-8" variant="destructive" />
                 <IconButton icon="radix-icons:crosshair-1" class="size-8" />
             </Ghost>
         </div>
@@ -28,5 +27,5 @@ const hovering = ref(false);
             </div>
             <slot></slot>
         </div>
-    </div>
+    </HoverTrigger>
 </template>

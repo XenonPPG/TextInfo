@@ -4,11 +4,11 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     visible: Boolean
 })
-const className = computed(() => 'opacity-' + (props.visible ? '100' : '0'));
+const className = computed(() => props.visible ? 'opacity-100' : 'opacity-0');
 </script>
 
 <template>
     <div :class="`${className} transition-opacity`">
-        <slot class="opacity-0 opacity-100"></slot>
+        <slot></slot>
     </div>
 </template>
