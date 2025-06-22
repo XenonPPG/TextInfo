@@ -39,7 +39,7 @@ function SetMode(mode) {
         <Button @click="open = !open" class="size-11" variant="outline" size="icon">
             <Icon class="size-4" :icon="GetIcon(selectedMode)"/>
         </Button>
-        <div v-if="open" class="flex flex-col border rounded-md p-2 gap-2 absolute top-12 bg-background">
+        <div v-if="open" class="flex flex-col border rounded-md p-2 gap-2 absolute top-12 backdrop-blur-md">
             <Button class="h-11 w-22" v-for="mode in icons" :key="mode.mode"
                 :variant="mode.mode !== selectedMode ? 'outline' : ''" @click="SetMode(mode.mode)">
                 <Icon class="size-4" :icon="GetIcon(mode.mode)" />
