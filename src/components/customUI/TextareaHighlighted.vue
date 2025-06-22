@@ -87,6 +87,6 @@ watch(() => Array.from(textStyle.all), () => Highlight(HAText, Array.from(textSt
 }
 
 .highlight-secondary {
-  background-color: #555555;
+  background-color: #383453;
 }
 </style>
