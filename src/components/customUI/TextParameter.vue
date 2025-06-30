@@ -1,10 +1,10 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
-import { Icon } from '@iconify/vue';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useTextProcessor } from '@/stores/TextProcessor.js';
-import { useTextStyle } from '@/stores/TextStyle.js';
-import { Button } from '@/components/ui/button';
+import {computed, ref, watch} from 'vue';
+import {Icon} from '@iconify/vue';
+import {Skeleton} from '@/components/ui/skeleton';
+import {useTextProcessor} from '@/stores/TextProcessor.js';
+import {useTextStyle} from '@/stores/TextStyle.js';
+import {Button} from '@/components/ui/button';
 import CooldownButton from '@/components/customUI/CooldownButton.vue';
 import Separator from '@/components/ui/separator/Separator.vue';
 import CopyButton from '@/components/customUI/CopyButton.vue';
@@ -27,13 +27,23 @@ const selected = ref(false);
 const unique = ref(false);
 const copyRef = ref(null);
 
-const displayVal = computed(() => Array.isArray(props.val) ? props.val.length : props.val);
-
 // возвращает объект с filter и unique
 const filterObj = computed(() => ({
-  filter: props.val,
+  filter: Array.isArray(props.val) ? props.val : [props.val],
   unique: unique.value
 }));
+
+const displayVal = computed(() => {
+  // Передаем массив с одним фильтром
+  const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
+
+  // Возвращаем длину для массивов, иначе сам текст
+  if (Array.isArray(props.val)) {
+    return filtered.length;
+  } else {
+    return filtered;
+  }
+});
 
 function SetPreview(value) {
   // Передаем объект фильтра или null
@@ -55,7 +65,7 @@ function SetSelection(value = null) {
 // обновляем фильтр при переключении unique, если активен
 watch(unique, () => {
   if (selected.value) {
-    textStyle.RemoveFilter({ filter: props.val, unique: !unique.value });
+    textStyle.RemoveFilter({filter: props.val, unique: !unique.value});
     textStyle.AddFilter(filterObj.value);
   }
 });
@@ -83,14 +93,14 @@ defineExpose({SetSelection, unique});
         <!-- title -->
         <div class="flex">
           <div class="pr-2 ml-2">
-            <Icon class="size-6 text-primary" :icon="icon" />
+            <Icon class="size-6 text-primary" :icon="icon"/>
           </div>
           <p class="w-0">{{ title }}</p>
         </div>
         <!-- toggle unique button -->
         <Ghost :visible="isHovering || unique" class="pr-1">
           <Button class="size-7" variant="ghost" @click.stop="() => unique = !unique">
-            <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }" />
+            <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }"/>
           </Button>
         </Ghost>
       </div>
@@ -102,7 +112,7 @@ defineExpose({SetSelection, unique});
           { 'border-primary': selected }
         ]"
       >
-        <div class="size-7" />
+        <div class="size-7"/>
         <!-- copy display value -->
         <CooldownButton
             :disable="true"

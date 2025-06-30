@@ -4,7 +4,7 @@ import { ref, reactive, h, Fragment } from 'vue'
 export const useTextStyle = defineStore('TextStyle', () => {
   const allHighlights = ref([]);
   const all = reactive(new Set());
-  const current = ref(null); // теперь хранит один объект фильтра или null
+  const current = ref(null);
 
   function Normalize(filter) {
     const normalized = Array.isArray(filter.filter) ? filter.filter : [filter.filter];
@@ -63,6 +63,7 @@ export const useTextStyle = defineStore('TextStyle', () => {
       // Убираем дубли из списка слов если нужно
       const wordList = unique ? [...new Set(filter)] : filter;
       const filterMarkers = [];
+      const foundTexts = new Set(); // Для отслеживания уже найденных текстов в режиме unique
 
       for (const word of wordList) {
         if (!word || typeof word !== 'string') continue;
@@ -72,12 +73,25 @@ export const useTextStyle = defineStore('TextStyle', () => {
 
         let match;
         while ((match = regex.exec(text))) {
+          const foundText = match[0].toLowerCase(); // Приводим к нижнему регистру для сравнения
+
+          // Если включена уникальность и такой текст уже найден - пропускаем
+          if (unique && foundTexts.has(foundText)) {
+            continue;
+          }
+
           const marker = {
             start: match.index,
             end: match.index + match[0].length,
-            text: match[0] // сохраняем найденный текст для проверки уникальности
+            text: match[0]
           };
+
           filterMarkers.push(marker);
+
+          // Добавляем найденный текст в набор (для режима unique)
+          if (unique) {
+            foundTexts.add(foundText);
+          }
 
           // Сбрасываем lastIndex для избежания бесконечного цикла
           if (match[0].length === 0) {
@@ -89,24 +103,8 @@ export const useTextStyle = defineStore('TextStyle', () => {
         regex.lastIndex = 0;
       }
 
-      // Применяем логику уникальности к найденным маркерам
-      if (unique && filterMarkers.length > 0) {
-        // Группируем по найденному тексту (без учета регистра)
-        const uniqueMarkers = new Map();
-
-        for (const marker of filterMarkers) {
-          const key = marker.text.toLowerCase();
-          if (!uniqueMarkers.has(key)) {
-            uniqueMarkers.set(key, marker);
-          }
-        }
-
-        // Добавляем только уникальные маркеры
-        allMarkers.push(...uniqueMarkers.values());
-      } else {
-        // Добавляем все маркеры
-        allMarkers.push(...filterMarkers);
-      }
+      // Добавляем все найденные маркеры (логика уникальности уже применена выше)
+      allMarkers.push(...filterMarkers);
     }
 
     if (allMarkers.length === 0) return [];
