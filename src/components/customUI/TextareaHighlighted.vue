@@ -5,14 +5,14 @@ import DOMPurify from 'dompurify'
 import { useTextStyle } from '@/stores/TextStyle.js'
 
 const text = defineModel()
-const sanitized = ref(DOMPurify.sanitize(text.value || '', { ALLOWED_TAGS: [] }));
+const sanitized = ref(DOMPurify.sanitize(text.value || '', { ALLOWED_TAGS: [] }))
 const textStyle = useTextStyle()
 
 const HAText = ref('')
 const highlightAllRef = ref(null)
 
 const HCText = ref('')
-const highlightCurrentRef = ref(null);
+const highlightCurrentRef = ref(null)
 
 const textareaRef = ref(null)
 
@@ -33,9 +33,13 @@ onMounted(() => {
   highlightAllRef.value.style.cssText += css
 })
 
-
-
+// Функция для подсветки текста
 function Highlight(ref, filters, color) {
+  if (!filters || filters.length === 0) {
+    ref.value = sanitized.value
+    return
+  }
+
   const markers = textStyle.GetMerged(text.value, filters)
 
   if (!markers.length) {
@@ -57,27 +61,36 @@ function Highlight(ref, filters, color) {
   ref.value = output
 }
 
+watch(text, () => {
+  sanitized.value = DOMPurify.sanitize(text.value || '', { ALLOWED_TAGS: [] })
+})
 
-watch(text, () => sanitized.value = DOMPurify.sanitize(text.value || '', { ALLOWED_TAGS: [] }));
-watch(() => textStyle.current, () => Highlight(HCText, textStyle.current, 'primary'));
-watch(() => Array.from(textStyle.all), () => Highlight(HAText, Array.from(textStyle.all), 'secondary'));
+watch(() => textStyle.current, () => {
+  // current теперь содержит один объект фильтра или null
+  const currentFilters = textStyle.current ? [textStyle.current] : []
+  Highlight(HCText, currentFilters, 'primary')
+}, { deep: true })
+
+watch(() => textStyle.allHighlights, () => {
+  Highlight(HAText, textStyle.allHighlights, 'secondary')
+}, { deep: true })
 </script>
 
 <template>
   <div class="relative">
     <!-- current -->
     <div v-html="HCText" ref="highlightCurrentRef"
-      class="absolute text-transparent border border-transparent inset-0 whitespace-pre-wrap break-words overflow-auto pointer-events-none z-1">
+         class="absolute text-transparent border border-transparent inset-0 whitespace-pre-wrap break-words overflow-auto pointer-events-none z-1">
     </div>
 
     <!-- all -->
     <div v-html="HAText" ref="highlightAllRef"
-      class="absolute bg-input/30 text-transparent border border-transparent inset-0 whitespace-pre-wrap break-words overflow-auto pointer-events-none z-0">
+         class="absolute bg-input/30 text-transparent border border-transparent inset-0 whitespace-pre-wrap break-words overflow-auto pointer-events-none z-0">
     </div>
 
     <Textarea ref="textareaRef" class="relative z-2 flex-1 w-full h-full min-w-0 resize-none
              overflow-auto !bg-transparent break-words whitespace-pre-wrap" v-model="text"
-      @scroll="onScroll"></Textarea>
+              @scroll="onScroll"></Textarea>
   </div>
 </template>
 

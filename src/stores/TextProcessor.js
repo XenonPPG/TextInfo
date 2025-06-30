@@ -4,6 +4,7 @@ import { ref, reactive, nextTick } from 'vue'
 export const useTextProcessor = defineStore('TextProcessor', () => {
   // const text = ref('');
   const text = ref(RandomString(Math.floor(Math.random() * 1000 + 1000)));
+  // const text = ref('hello 123 AY');
   const loading = ref(true);
 
   function RandomString(length){
@@ -114,6 +115,7 @@ export const useTextProcessor = defineStore('TextProcessor', () => {
         for (const category of Object.values(section)) {
           for (const param of Object.values(category)) {
             param.val = param.fn() || 0;
+            param.unique = false;
           }
         }
       }

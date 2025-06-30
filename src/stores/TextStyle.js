@@ -4,82 +4,176 @@ import { ref, reactive, h, Fragment } from 'vue'
 export const useTextStyle = defineStore('TextStyle', () => {
   const allHighlights = ref([]);
   const all = reactive(new Set());
-  const current = ref([]);
+  const current = ref(null); // теперь хранит один объект фильтра или null
 
   function Normalize(filter) {
-    return Array.isArray(filter) ? filter : [filter];
+    const normalized = Array.isArray(filter.filter) ? filter.filter : [filter.filter];
+    return { filter: normalized, unique: !!filter.unique };
   }
-  function AddFilter(filter) {
-    allHighlights.value.push(Normalize(filter));
+
+  function AddFilter(filterObj) {
+    allHighlights.value.push(Normalize(filterObj));
     UpdateAll();
   }
-  function RemoveFilter(filter) {
-    allHighlights.value = allHighlights.value.filter(item => JSON.stringify(item) !== JSON.stringify(Normalize(filter)));
+
+  function RemoveFilter(filterObj) {
+    const target = JSON.stringify(Normalize(filterObj));
+    allHighlights.value = allHighlights.value.filter(item => JSON.stringify(item) !== target);
     UpdateAll();
   }
+
   function UpdateAll() {
     all.clear();
     if (allHighlights.value.length <= 0) return;
 
-    allHighlights.value.forEach(filter => {
-      filter.forEach(item => {
+    allHighlights.value.forEach(({ filter, unique }) => {
+      const items = unique ? [...new Set(filter)] : filter;
+      items.forEach(item => {
         all.add(item);
-      })
-    })
+      });
+    });
   }
+
   function GetMerged(text, filters) {
-    const markers = []
+    if (!text || typeof text !== 'string') return [];
 
-    for (const word of filters) {
-      if (!word) continue
-      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const regex = new RegExp(escaped, 'g')
-
-      let match
-      while ((match = regex.exec(text))) {
-        markers.push({ start: match.index, end: match.index + match[0].length })
-        regex.lastIndex = match.index + match[0].length
-      }
+    // Проверяем, что filters - это массив
+    if (!Array.isArray(filters)) {
+      console.warn('GetMerged: filters должен быть массивом');
+      return [];
     }
 
-    if (markers.length === 0) return []
+    const allMarkers = [];
 
-    markers.sort((a, b) => a.start - b.start)
+    for (const filterObj of filters) {
+      // Проверяем структуру объекта фильтра
+      if (!filterObj || typeof filterObj !== 'object') {
+        console.warn('GetMerged: неверная структура фильтра', filterObj);
+        continue;
+      }
 
-    const merged = []
-    let last = markers[0]
+      const { filter, unique } = filterObj;
 
-    for (let i = 1; i < markers.length; i++) {
-      const curr = markers[i]
-      if (curr.start <= last.end) {
-        last.end = Math.max(last.end, curr.end)
+      // Проверяем, что filter - это массив
+      if (!Array.isArray(filter)) {
+        console.warn('GetMerged: filter должен быть массивом', filter);
+        continue;
+      }
+
+      // Убираем дубли из списка слов если нужно
+      const wordList = unique ? [...new Set(filter)] : filter;
+      const filterMarkers = [];
+
+      for (const word of wordList) {
+        if (!word || typeof word !== 'string') continue;
+
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(escaped, 'gi');
+
+        let match;
+        while ((match = regex.exec(text))) {
+          const marker = {
+            start: match.index,
+            end: match.index + match[0].length,
+            text: match[0] // сохраняем найденный текст для проверки уникальности
+          };
+          filterMarkers.push(marker);
+
+          // Сбрасываем lastIndex для избежания бесконечного цикла
+          if (match[0].length === 0) {
+            regex.lastIndex++;
+          }
+        }
+
+        // Сбрасываем lastIndex после каждого слова
+        regex.lastIndex = 0;
+      }
+
+      // Применяем логику уникальности к найденным маркерам
+      if (unique && filterMarkers.length > 0) {
+        // Группируем по найденному тексту (без учета регистра)
+        const uniqueMarkers = new Map();
+
+        for (const marker of filterMarkers) {
+          const key = marker.text.toLowerCase();
+          if (!uniqueMarkers.has(key)) {
+            uniqueMarkers.set(key, marker);
+          }
+        }
+
+        // Добавляем только уникальные маркеры
+        allMarkers.push(...uniqueMarkers.values());
       } else {
-        merged.push(last)
-        last = curr
+        // Добавляем все маркеры
+        allMarkers.push(...filterMarkers);
       }
     }
 
-    merged.push(last)
+    if (allMarkers.length === 0) return [];
 
-    return merged
+    // Сортируем маркеры по позиции начала
+    allMarkers.sort((a, b) => a.start - b.start);
+
+    // Объединяем пересекающиеся маркеры
+    const merged = [];
+    let current = { start: allMarkers[0].start, end: allMarkers[0].end };
+
+    for (let i = 1; i < allMarkers.length; i++) {
+      const next = allMarkers[i];
+      if (next.start <= current.end) {
+        // Объединяем перекрывающиеся маркеры
+        current.end = Math.max(current.end, next.end);
+      } else {
+        // Добавляем текущий маркер и переходим к следующему
+        merged.push({ start: current.start, end: current.end });
+        current = { start: next.start, end: next.end };
+      }
+    }
+
+    // Не забываем добавить последний маркер
+    merged.push({ start: current.start, end: current.end });
+
+    return merged;
   }
+
   function GetFilteredText(text, filters) {
-    return GetMerged(text, filters).map(item => text.slice(item.start, item.end)).join('');
+    if (!text || typeof text !== 'string') return '';
+
+    const merged = GetMerged(text, filters);
+    return merged.map(item => text.slice(item.start, item.end)).join('');
   }
+
   function ClampVal(val, max_length, for_sonner = false) {
+    if (val === null || val === undefined) val = '';
     val = val.toString();
+
+    if (max_length <= 0) return '';
+
     const exceedsLimit = val.length > max_length;
     const trimmed = val.slice(0, max_length).trimEnd();
-  
+
     if (!exceedsLimit) return trimmed;
-  
-    if (!for_sonner) return trimmed + '<span class="text-gray-500">...</span>';
-  
+
+    if (!for_sonner) {
+      return trimmed + '<span class="text-gray-500">...</span>';
+    }
+
     return h(Fragment, null, [
       trimmed,
       h('span', { class: 'text-gray-500' }, '...')
     ]);
   }
 
-  return { all, current, Normalize, RemoveFilter, AddFilter, GetMerged, GetFilteredText, ClampVal }
-})
+  return {
+    all,
+    current,
+    allHighlights,
+    Normalize,
+    RemoveFilter,
+    AddFilter,
+    UpdateAll,
+    GetMerged,
+    GetFilteredText,
+    ClampVal
+  };
+});

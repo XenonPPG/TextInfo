@@ -18,14 +18,14 @@ const textStyle = useTextStyle();
 </script>
 
 <template>
-    <header class="w-full z-5 flex fixed top-0 justify-between items-center border-b border-dashed p-5 backdrop-blur-3xl">
+    <header class="w-full z-5 flex fixed top-0 justify-between items-center border-b border-dashed p-5 backdrop-blur-xs">
         <h1 class="text-6xl">TextInfo <span class="text-4xl text-primary">Анализ текста</span></h1>
         <ThemeSelector />
     </header>
     <div class="w-full z-0 h-screen flex flex-col mt-25">
         <main class="flex-1 flex m-2 gap-2 min-h-0 min-w-0">
             <div class="flex-1 flex flex-col gap-2 min-h-0 min-w-0">
-                <TextareaHighlighted v-model="textProcessor.text" class="flex-1 w-full h-full min-w-0" />
+                <TextareaHighlighted v-model="textProcessor.text" @change="textProcessor.analyze" class="flex-1 w-full h-full min-w-0" />
                 <div class="flex gap-2">
                     <Button class="flex-1 h-11" @click="textProcessor.analyze">Проверить</Button>
                     <CopyButton :text="textStyle.GetFilteredText(textProcessor.text, textStyle.all)" />

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTextProcessor } from '@/stores/TextProcessor.js';
@@ -12,81 +12,124 @@ import Ghost from '@/components/customUI/Ghost.vue';
 import HoverTrigger from '@/components/customUI/HoverTrigger.vue';
 
 const props = defineProps({
-    icon: String,
-    title: String,
-    val: {
-        type: [String, Number, Array],
-        required: true
-    },
+  icon: String,
+  title: String,
+  val: {
+    type: [String, Number, Array],
+    required: true
+  },
 });
 
 const textProcessor = useTextProcessor();
 const textStyle = useTextStyle();
 
-const borderStyle = computed(() => selected.value ? 'border-primary' : '');
-const borderPreviewStyle = computed(() => selected.value ? '' : 'hover:border-primary hover:border-dashed')
-const bgStyle = computed(() => selected.value ? 'bg-primary/20' : 'bg-secondary/50');
-
 const selected = ref(false);
-const displayVal = computed(() => Array.isArray(props.val) ? props.val.length : props.val);
 const unique = ref(false);
-
 const copyRef = ref(null);
 
+const displayVal = computed(() => Array.isArray(props.val) ? props.val.length : props.val);
+
+// возвращает объект с filter и unique
+const filterObj = computed(() => ({
+  filter: props.val,
+  unique: unique.value
+}));
+
 function SetPreview(value) {
-    textStyle.current = value ? textStyle.Normalize(props.val) : [];
+  // Передаем объект фильтра или null
+  textStyle.current = value ? filterObj.value : null;
 }
 
 function SetSelection(value = null) {
-    selected.value = value ?? !selected.value;
+  const newVal = value ?? !selected.value;
+  if (newVal !== selected.value) {
+    selected.value = newVal;
     if (selected.value) {
-        textStyle.AddFilter(props.val);
+      textStyle.AddFilter(filterObj.value);
+    } else {
+      textStyle.RemoveFilter(filterObj.value);
     }
-    else {
-        textStyle.RemoveFilter(props.val);
-    }
+  }
 }
+
+// обновляем фильтр при переключении unique, если активен
+watch(unique, () => {
+  if (selected.value) {
+    textStyle.RemoveFilter({ filter: props.val, unique: !unique.value });
+    textStyle.AddFilter(filterObj.value);
+  }
+});
+
+defineExpose({SetSelection, unique});
 </script>
 
 <template>
-    <!-- main block -->
-    <HoverTrigger v-if="!textProcessor.loading" v-slot="{ isHovering }" class="flex flex-1" @change="SetPreview">
-        <button @click="() => SetSelection()"
-            :class="`flex flex-1 h-10 border ${borderStyle} ${borderPreviewStyle} rounded-md transition-colors duration-150 ${bgStyle} hover:cursor-pointer`">
-            <div class="flex flex-1 items-center justify-between">
-                <!-- title -->
-                <div class="flex">
-                    <div class="pr-2 ml-2">
-                        <Icon class="size-6 text-primary" :icon="icon" />
-                    </div>
-                    <p class="w-0">{{ title }}</p>
-                </div>
-                <!-- toggle unique button -->
-                <Ghost :visible="isHovering || unique" class="pr-1">
-                    <Button class="size-7" variant="ghost" @click.stop="() => unique = !unique">
-                        <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }" />
-                    </Button>
-                </Ghost>
-            </div>
-            <!-- display value -->
-            <div
-                :class="`flex flex-1 border-l ${borderStyle} items-center justify-between px-1 transition-colors duration-150`">
-                <div class="size-7" />
-                <!-- copy display value -->
-                <CooldownButton :disable="true" variant="link" class="text-white p-0 m-0 max-w-0 font-normal"
-                    @click.stop="copyRef.Copy(displayVal)">
-                    <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
-                </CooldownButton>
+  <!-- main block -->
+  <HoverTrigger
+      v-if="!textProcessor.loading"
+      v-slot="{ isHovering }"
+      class="flex flex-1"
+      @change="SetPreview"
+  >
+    <button
+        @click="() => SetSelection()"
+        :class="[
+        'flex flex-1 h-10 border rounded-md transition-colors duration-150 hover:cursor-pointer',
+        { 'border-primary': selected, 'hover:border-primary hover:border-dashed': !selected },
+        { 'bg-primary/20': selected, 'bg-secondary/50': !selected }
+      ]"
+    >
+      <div class="flex flex-1 items-center justify-between">
+        <!-- title -->
+        <div class="flex">
+          <div class="pr-2 ml-2">
+            <Icon class="size-6 text-primary" :icon="icon" />
+          </div>
+          <p class="w-0">{{ title }}</p>
+        </div>
+        <!-- toggle unique button -->
+        <Ghost :visible="isHovering || unique" class="pr-1">
+          <Button class="size-7" variant="ghost" @click.stop="() => unique = !unique">
+            <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }" />
+          </Button>
+        </Ghost>
+      </div>
 
-                <!-- copy value -->
-                <Ghost :visible="isHovering">
-                    <CopyButton ref="copyRef" :text="textStyle.Normalize(val).join('')" class="size-7" variant="ghost"
-                        @click.stop />
-                </Ghost>
-            </div>
-        </button>
-    </HoverTrigger>
+      <!-- display value -->
+      <div
+          :class="[
+          'flex flex-1 border-l items-center justify-between px-1 transition-colors duration-150',
+          { 'border-primary': selected }
+        ]"
+      >
+        <div class="size-7" />
+        <!-- copy display value -->
+        <CooldownButton
+            :disable="true"
+            variant="link"
+            class="text-white p-0 m-0 max-w-0 font-normal"
+            @click.stop="copyRef.Copy(`${props.title}: ${displayVal}`)"
+        >
+          <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
+        </CooldownButton>
 
-    <!-- skeleton -->
-    <Skeleton v-else class="rounded-md h-10 transition-colors duration-75 bg-secondary" />
+        <!-- copy value -->
+        <Ghost :visible="isHovering">
+          <CopyButton
+              ref="copyRef"
+              :text="textStyle.Normalize({ filter: val, unique: unique }).filter.join('')"
+              class="size-7"
+              variant="ghost"
+              @click.stop
+          />
+        </Ghost>
+      </div>
+    </button>
+  </HoverTrigger>
+
+  <!-- skeleton -->
+  <Skeleton
+      v-else
+      class="rounded-md h-10 transition-colors duration-75 bg-secondary"
+  />
 </template>
