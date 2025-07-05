@@ -12,12 +12,7 @@ import Ghost from '@/components/customUI/Ghost.vue';
 import HoverTrigger from '@/components/customUI/HoverTrigger.vue';
 
 const props = defineProps({
-  icon: String,
-  title: String,
-  val: {
-    type: [String, Number, Array],
-    required: true
-  },
+  params: Object,
 });
 
 const textProcessor = useTextProcessor();
@@ -27,21 +22,32 @@ const selected = ref(false);
 const unique = ref(false);
 const copyRef = ref(null);
 
+const allowUnique = ref(props.params.valueType !== Number);
+
 // возвращает объект с filter и unique
 const filterObj = computed(() => ({
-  filter: Array.isArray(props.val) ? props.val : [props.val],
+  filter: Array.isArray(props.params.val) ? props.params.val : [props.params.val],
   unique: unique.value
 }));
 
 const displayVal = computed(() => {
-  // Передаем массив с одним фильтром
-  const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
+  const valueType = props.params.valueType;
+  const val = props.params.val;
 
-  // Возвращаем длину для массивов, иначе сам текст
-  if (Array.isArray(props.val)) {
-    return filtered.length;
+  if (valueType === Number) {
+    // display number or processed number
+    const postFn = props.params.postFn;
+    if (postFn) {
+      return postFn(val).length;
+    }
+    return val.length;
+  } else if (valueType === String) {
+    // display clamped string
+    const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
+    return textStyle.ClampVal(filtered, 13);
   } else {
-    return filtered;
+    // display array length
+    return val.length;
   }
 });
 
@@ -51,13 +57,15 @@ function SetPreview(value) {
 }
 
 function SetSelection(value = null) {
-  const newVal = value ?? !selected.value;
-  if (newVal !== selected.value) {
-    selected.value = newVal;
-    if (selected.value) {
-      textStyle.AddFilter(filterObj.value);
-    } else {
-      textStyle.RemoveFilter(filterObj.value);
+  if (allowUnique.value) {
+    const newVal = value ?? !selected.value;
+    if (newVal !== selected.value) {
+      selected.value = newVal;
+      if (selected.value) {
+        textStyle.AddFilter(filterObj.value);
+      } else {
+        textStyle.RemoveFilter(filterObj.value);
+      }
     }
   }
 }
@@ -65,7 +73,7 @@ function SetSelection(value = null) {
 // обновляем фильтр при переключении unique, если активен
 watch(unique, () => {
   if (selected.value) {
-    textStyle.RemoveFilter({filter: props.val, unique: !unique.value});
+    textStyle.RemoveFilter({filter: props.params.val, unique: !unique.value});
     textStyle.AddFilter(filterObj.value);
   }
 });
@@ -93,12 +101,12 @@ defineExpose({SetSelection, unique});
         <!-- title -->
         <div class="flex">
           <div class="pr-2 ml-2">
-            <Icon class="size-6 text-primary" :icon="icon"/>
+            <Icon class="size-6 text-primary" :icon="params.icon"/>
           </div>
-          <p class="w-0">{{ title }}</p>
+          <p class="w-0">{{ params.title }}</p>
         </div>
         <!-- toggle unique button -->
-        <Ghost :visible="isHovering || unique" class="pr-1">
+        <Ghost v-if="allowUnique" :visible="isHovering || unique" class="pr-1">
           <Button class="size-7" variant="ghost" @click.stop="() => unique = !unique">
             <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }"/>
           </Button>
@@ -118,7 +126,7 @@ defineExpose({SetSelection, unique});
             :disable="true"
             variant="link"
             class="text-white p-0 m-0 max-w-0 font-normal"
-            @click.stop="copyRef.Copy(`${props.title}: ${displayVal}`)"
+            @click.stop="copyRef.Copy(`${props.params.title}: ${displayVal}`)"
         >
           <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
         </CooldownButton>
@@ -127,7 +135,7 @@ defineExpose({SetSelection, unique});
         <Ghost :visible="isHovering">
           <CopyButton
               ref="copyRef"
-              :text="textStyle.Normalize({ filter: val, unique: unique }).filter.join('')"
+              :text="textStyle.Normalize({ filter: params.val, unique: unique }).filter.join('')"
               class="size-7"
               variant="ghost"
               @click.stop
