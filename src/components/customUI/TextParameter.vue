@@ -10,6 +10,7 @@ import Separator from '@/components/ui/separator/Separator.vue';
 import CopyButton from '@/components/customUI/CopyButton.vue';
 import Ghost from '@/components/customUI/Ghost.vue';
 import HoverTrigger from '@/components/customUI/HoverTrigger.vue';
+import {useUtils} from "@/stores/Utils.js";
 
 const props = defineProps({
   params: Object,
@@ -17,10 +18,10 @@ const props = defineProps({
 
 const textProcessor = useTextProcessor();
 const textStyle = useTextStyle();
+const utils = useUtils();
 
 const selected = ref(false);
 const unique = ref(false);
-const copyRef = ref(null);
 
 const allowUnique = ref(props.params.valueType !== Number);
 
@@ -53,7 +54,9 @@ const displayVal = computed(() => {
 
 function SetPreview(value) {
   // Передаем объект фильтра или null
-  textStyle.current = value ? filterObj.value : null;
+  if (!props.params.postFn) {
+    textStyle.current = value ? filterObj.value : null;
+  }
 }
 
 function SetSelection(value = null) {
@@ -126,7 +129,7 @@ defineExpose({SetSelection, unique});
             :disable="true"
             variant="link"
             class="text-white p-0 m-0 max-w-0 font-normal"
-            @click.stop="copyRef.Copy(`${props.params.title}: ${displayVal}`)"
+            @click.stop="utils.Copy(`${props.params.title}: ${displayVal}`)"
         >
           <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
         </CooldownButton>
@@ -134,12 +137,13 @@ defineExpose({SetSelection, unique});
         <!-- copy value -->
         <Ghost :visible="isHovering">
           <CopyButton
-              ref="copyRef"
+              v-if="!props.params.postFn"
               :text="textStyle.Normalize({ filter: params.val, unique: unique }).filter.join('')"
               class="size-7"
               variant="ghost"
               @click.stop
           />
+          <div v-else class="size-7"/>
         </Ghost>
       </div>
     </button>
