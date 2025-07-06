@@ -47,7 +47,7 @@ const displayVal = computed(() => {
     return textStyle.ClampVal(val, 13);
   } else {
     // display length
-    const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
+    const filtered = textStyle.GetFilteredText([filterObj.value]);
     return filtered.length;
   }
 });
@@ -138,7 +138,7 @@ defineExpose({SetSelection, unique});
         <Ghost :visible="isHovering">
           <CopyButton
               v-if="!props.params.postFn"
-              :text="textStyle.Normalize({ filter: params.val, unique: unique }).filter.join('')"
+              :text="textStyle.GetFilteredText([filterObj])"
               class="size-7"
               variant="ghost"
               @click.stop

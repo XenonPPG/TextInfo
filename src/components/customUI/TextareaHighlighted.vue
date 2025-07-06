@@ -40,7 +40,7 @@ function Highlight(ref, filters, color) {
     return
   }
 
-  const markers = textStyle.GetMerged(text.value, filters)
+  const markers = textStyle.GetMerged(filters)
 
   if (!markers.length) {
     ref.value = sanitized.value

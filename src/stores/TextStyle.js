@@ -1,10 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, h, Fragment } from 'vue'
+import {useTextProcessor} from "@/stores/TextProcessor.js";
 
 export const useTextStyle = defineStore('TextStyle', () => {
   const allHighlights = ref([]);
   const all = reactive(new Set());
   const current = ref(null);
+
+  const textProcessor = useTextProcessor();
 
   function Normalize(filter) {
     const normalized = Array.isArray(filter.filter) ? filter.filter : [filter.filter];
@@ -36,7 +39,7 @@ export const useTextStyle = defineStore('TextStyle', () => {
 
   // --- Новый код ниже ---
 
-  function getFilterMatches(text, filters) {
+  function getFilterMatches(filters) {
     const ranges = new Set();
 
     for (const { filter, unique } of filters) {
@@ -44,10 +47,10 @@ export const useTextStyle = defineStore('TextStyle', () => {
 
       for (const term of filter) {
         const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(escaped, 'gi');
+        const regex = new RegExp(escaped, 'g');
         let match;
 
-        while ((match = regex.exec(text)) !== null) {
+        while ((match = regex.exec(textProcessor.text)) !== null) {
           const start = match.index;
           const end = start + match[0].length;
 
@@ -92,19 +95,19 @@ export const useTextStyle = defineStore('TextStyle', () => {
     return result;
   }
 
-  function GetMerged(text, filters) {
-    if (!text || typeof text !== 'string') return [];
+  function GetMerged(filters) {
+    if (!textProcessor.text || typeof textProcessor.text !== 'string') return [];
     if (!Array.isArray(filters)) return [];
 
-    const rawMatches = getFilterMatches(text, filters);
+    const rawMatches = getFilterMatches(filters);
     return mergeRanges(rawMatches);
   }
 
-  function GetFilteredText(text, filters) {
-    if (!text || typeof text !== 'string') return '';
+  function GetFilteredText(filters) {
+    if (!textProcessor.text || typeof textProcessor.text !== 'string') return '';
 
-    const merged = GetMerged(text, filters);
-    return merged.map(item => text.slice(item.start, item.end)).join('');
+    const merged = GetMerged(filters);
+    return merged.map(item => textProcessor.text.slice(item.start, item.end)).join('');
   }
 
   function ClampVal(val, max_length, for_sonner = false) {
