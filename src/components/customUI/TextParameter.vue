@@ -38,16 +38,16 @@ const displayVal = computed(() => {
     // display number or processed number
     const postFn = props.params.postFn;
     if (postFn) {
-      return postFn(val).length;
+      return postFn(val);
     }
     return val.length;
   } else if (valueType === String) {
     // display clamped string
-    const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
-    return textStyle.ClampVal(filtered, 13);
+    return textStyle.ClampVal(val, 13);
   } else {
-    // display array length
-    return val.length;
+    // display length
+    const filtered = textStyle.GetFilteredText(textProcessor.text, [filterObj.value]);
+    return filtered.length;
   }
 });
 
