@@ -1,4 +1,5 @@
 <script setup>
+console.time('setup');
 import {computed, ref, watch} from 'vue';
 import {Icon} from '@iconify/vue';
 import {Skeleton} from '@/components/ui/skeleton';
@@ -23,7 +24,7 @@ const utils = useUtils();
 const selected = ref(false);
 const unique = ref(false);
 
-const allowUnique = ref(props.params.valueType !== Number);
+const allowUnique = props.params.valueType !== Number;
 
 // возвращает объект с filter и unique
 const filterObj = computed(() => ({
@@ -60,7 +61,7 @@ function SetPreview(value) {
 }
 
 function SetSelection(value = null) {
-  if (allowUnique.value) {
+  if (allowUnique) {
     const newVal = value ?? !selected.value;
     if (newVal !== selected.value) {
       selected.value = newVal;
@@ -82,6 +83,7 @@ watch(unique, () => {
 });
 
 defineExpose({SetSelection, unique});
+console.timeEnd('setup');
 </script>
 
 <template>
@@ -110,7 +112,10 @@ defineExpose({SetSelection, unique});
         </div>
         <!-- toggle unique button -->
         <Ghost v-if="allowUnique" :visible="isHovering || unique" class="pr-1">
-          <Button class="size-7" variant="ghost" @click.stop="() => unique = !unique">
+          <Button class="size-7" variant="ghost" @click.stop="() => {
+            unique = !unique;
+            SetPreview(true);
+          }">
             <Icon icon="radix-icons:crosshair-1" :class="{ 'text-primary': unique }"/>
           </Button>
         </Ghost>
@@ -131,7 +136,7 @@ defineExpose({SetSelection, unique});
             class="text-white p-0 m-0 max-w-0 font-normal"
             @click.stop="utils.Copy(`${props.params.title}: ${displayVal}`)"
         >
-          <p v-html="textStyle.ClampVal(displayVal, 12)"></p>
+          <p v-html="displayVal"></p>
         </CooldownButton>
 
         <!-- copy value -->
