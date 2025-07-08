@@ -1,5 +1,5 @@
 <script setup>
-import TextParameter from '@/components/customUI/TextParameter.vue';
+import TextParameter from '@/views/SimpleAnalysis/TextParameter.vue';
 import Category from '@/components/customUI/Category.vue';
 import CooldownButton from '@/components/customUI/CooldownButton.vue';
 import IconButton from '@/components/customUI/IconButton.vue';

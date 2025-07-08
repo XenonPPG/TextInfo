@@ -100,6 +100,6 @@ watch(() => textStyle.allHighlights, () => {
 }
 
 .highlight-secondary {
-  background-color: #383453;
+  background-color: #464078;
 }
 </style>

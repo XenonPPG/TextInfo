@@ -2,12 +2,12 @@
 console.time('setup');
 import {computed, ref, watch} from 'vue';
 import {Icon} from '@iconify/vue';
-import {Skeleton} from '@/components/ui/skeleton';
+import {Skeleton} from '@/components/ui/skeleton/index.js';
 import {useTextProcessor} from '@/stores/TextProcessor.js';
 import {useTextStyle} from '@/stores/TextStyle.js';
-import {Button} from '@/components/ui/button';
+import {Button} from '@/components/ui/button/index.js';
 import CooldownButton from '@/components/customUI/CooldownButton.vue';
-import Separator from '@/components/ui/separator/Separator.vue';
+import Separator from '../../components/ui/separator/Separator.vue';
 import CopyButton from '@/components/customUI/CopyButton.vue';
 import Ghost from '@/components/customUI/Ghost.vue';
 import HoverTrigger from '@/components/customUI/HoverTrigger.vue';
