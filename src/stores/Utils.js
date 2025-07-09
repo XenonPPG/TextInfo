@@ -2,8 +2,10 @@ import {toast} from "vue-sonner";
 import {markRaw} from "vue";
 import {defineStore} from 'pinia'
 import {useTextStyle} from "@/stores/TextStyle.js";
+import {useTextProcessor} from "@/stores/TextProcessor.js";
 
 export const useUtils = defineStore('Utils', () => {
+    const textProcessor = useTextProcessor();
     const textStyle = useTextStyle();
 
     function Copy(text) {
@@ -35,5 +37,16 @@ export const useUtils = defineStore('Utils', () => {
         })
     }
 
-    return { Copy };
+    function Write(txt) {
+        textProcessor.text = '';
+        const baseDelay = 1000 / txt.length / 2; // Чем больше текст, тем меньше задержка
+
+        for (let i = 0; i < txt.length; i++) {
+            setTimeout(() => {
+                textProcessor.text += txt[i];
+            }, i * baseDelay);
+        }
+    }
+
+    return { Copy, Write };
 });

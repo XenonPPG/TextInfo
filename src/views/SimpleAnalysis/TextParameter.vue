@@ -1,5 +1,4 @@
 <script setup>
-console.time('setup');
 import {computed, ref, watch} from 'vue';
 import {Icon} from '@iconify/vue';
 import {Skeleton} from '@/components/ui/skeleton/index.js';
@@ -83,7 +82,6 @@ watch(unique, () => {
 });
 
 defineExpose({SetSelection, unique});
-console.timeEnd('setup');
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Label } from '@/components/ui/label'
+import {Label} from '@/components/ui/label'
 import {
   NumberField,
   NumberFieldContent,
@@ -16,12 +16,12 @@ const id = 'field_' + props.label;
 </script>
 
 <template>
-  <NumberField :id="id">
+  <NumberField :id="id" class="-mt-1.5">
     <Label :for="id">{{}}</Label>
     <NumberFieldContent>
-      <NumberFieldDecrement />
-      <NumberFieldInput />
-      <NumberFieldIncrement />
+      <NumberFieldDecrement/>
+      <NumberFieldInput/>
+      <NumberFieldIncrement/>
     </NumberFieldContent>
   </NumberField>
 </template>
