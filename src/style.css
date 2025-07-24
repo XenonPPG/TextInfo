@@ -95,8 +95,15 @@
     @apply bg-background text-foreground;
     transition: background-color 100ms !important;
   }
+  button:hover{
+    cursor: pointer;
+  }
 }
 
 html, body, #app {
   height: 100vh;
+}
+
+html{
+  scroll-behavior: smooth;
 }

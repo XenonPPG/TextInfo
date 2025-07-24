@@ -37,16 +37,5 @@ export const useUtils = defineStore('Utils', () => {
         })
     }
 
-    function Write(txt) {
-        textProcessor.text = '';
-        const baseDelay = 1000 / txt.length / 2; // Чем больше текст, тем меньше задержка
-
-        for (let i = 0; i < txt.length; i++) {
-            setTimeout(() => {
-                textProcessor.text += txt[i];
-            }, i * baseDelay);
-        }
-    }
-
-    return { Copy, Write };
+    return { Copy };
 });

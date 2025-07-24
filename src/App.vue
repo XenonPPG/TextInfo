@@ -3,7 +3,7 @@ import {Button} from '@/components/ui/button';
 import {useTextProcessor} from '@/stores/TextProcessor.js';
 import {useTextStyle} from '@/stores/TextStyle.js'
 import ThemeSelector from '@/components/ThemeSelector.vue';
-import TextareaHighlighted from '@/components/customUI/TextareaHighlighted.vue';
+import TextareaHighlighted from '@/components/TextareaHighlighted.vue';
 import CopyButton from '@/components/customUI/CopyButton.vue';
 import {Toaster} from '@/components/ui/sonner'
 import 'vue-sonner/style.css' // vue-sonner v2 requires this import

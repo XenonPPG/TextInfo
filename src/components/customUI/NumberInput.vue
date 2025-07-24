@@ -20,7 +20,7 @@ const id = 'field_' + props.label;
     <Label :for="id">{{}}</Label>
     <NumberFieldContent>
       <NumberFieldDecrement/>
-      <NumberFieldInput/>
+      <NumberFieldInput class="bg-secondary/50"/>
       <NumberFieldIncrement/>
     </NumberFieldContent>
   </NumberField>

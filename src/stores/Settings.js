@@ -12,6 +12,9 @@ export const useSettings = defineStore('Settings', () => {
             sort_unique: {
                 value: false
             },
+            copy_with_name: {
+                value: false
+            }
         }
     })
     return {settings};

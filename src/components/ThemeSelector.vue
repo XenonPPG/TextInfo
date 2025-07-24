@@ -31,7 +31,6 @@ function SetMode(mode) {
     selectedMode.value = mode;
     colorMode.value = mode;
 }
-
 </script>
 
 <template>

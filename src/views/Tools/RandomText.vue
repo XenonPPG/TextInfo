@@ -4,8 +4,9 @@ import NumberInput from "@/components/customUI/NumberInput.vue";
 import CooldownButton from "@/components/customUI/CooldownButton.vue";
 import {useUtils} from "@/stores/Utils.js";
 import {ref} from "vue";
+import {useTextProcessor} from "@/stores/TextProcessor.js";
 
-const utils = useUtils();
+const textProcessor = useTextProcessor();
 
 const length = ref(0);
 const set = ref([]);
@@ -18,6 +19,6 @@ const set = ref([]);
     из
     <SourceSelect v-model="set"/>
     <CooldownButton icon="radix-icons:check" :disable="true"
-                    @click="utils.Write(Array.from({length: length}, () => set[Math.floor(Math.random() * set.length)]))"/>
+                    @click="textProcessor.text = Array.from({length: length}, () => set[Math.floor(Math.random() * set.length)]).join('')"/>
   </div>
 </template>

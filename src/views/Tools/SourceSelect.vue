@@ -21,6 +21,7 @@ const sources = (() => {
   const base64 = `${[...english_uppercase, ...english, ...numbers].join('')}+/`.split('');
   const base32 = `${english_uppercase.join('')}234567`.split('');
   const hex = `${numbers.join('')}ABCDEF`.split('');
+  const binary = ['0', '1'];
 
   return {
     normal: {
@@ -32,10 +33,11 @@ const sources = (() => {
       ascii: ascii,
       full_ascii: full_ascii,
     },
-    base: {
+    other: {
       base64: base64,
       base32: base32,
       hex: hex,
+      binary: binary,
     }
   };
 })();
